@@ -1,6 +1,6 @@
 # Welcome to RNinjas Page's
 
-![Alt text](![r ninjas](https://user-images.githubusercontent.com/91134687/142050596-3dbe0b7a-f758-4413-b64e-564811ad2153.jpg))
+(![r ninjas](https://user-images.githubusercontent.com/91134687/142050596-3dbe0b7a-f758-4413-b64e-564811ad2153.jpg))
 
   Group Members:
   
