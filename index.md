@@ -2,7 +2,7 @@
   Group Members:
   
   * [Suat Tuncer](https://pjournal.github.io/mef05-stuncers/)
-  * [Özgür Akbelen](https://pjournal.github.io/mef05-ustame/)
+  * [Özgür Akbelen](https://pjournal.github.io/mef05-akbeleno/)
   * [Meryem Usta](https://pjournal.github.io/mef05-ustame/)
   * [Emre Can Sığırcı](https://pjournal.github.io/mef05-emrecansi/)
   
