@@ -1,7 +1,7 @@
 # Welcome to RNinjas Page's
 
-![alt text](http://![r ninjas](https://user-images.githubusercontent.com/91134687/142049155-adbaf258-2697-4732-9409-28f57777bf3c.jpg)
-/to/img.png)
+(https://user-images.githubusercontent.com/91134687/142049155-adbaf258-2697-4732-9409-28f57777bf3c.jpg)
+
   Group Members:
   
   * [Suat Tuncer](https://pjournal.github.io/mef05-stuncers/)
