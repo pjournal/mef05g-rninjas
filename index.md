@@ -16,7 +16,7 @@ In this application, the price changes and data of the selected fish according t
  [Izmir Fish Shiny](https://mef05g-rninjas.shinyapps.io/Fish_Price/)
  
  
- ## Stack OverFlow Survey Analysis 
+## Stack OverFlow Survey Analysis
  
  In this project, The Result of Stack Overflow Survey were investigated.
   
