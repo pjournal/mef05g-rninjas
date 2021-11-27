@@ -17,9 +17,10 @@ In this application, the price changes and data of the selected fish according t
  
  
  ## Stack OverFlow Survey Analysis 
+ 
  In this project, The Result of Stack Overflow Survey were investigated.
  
-This project consist of 3 main part:
+ This project consist of 3 main part:
 
    1. [Preparation of the preprocessed data](https://pjournal.github.io/mef05-ustame/)
     
