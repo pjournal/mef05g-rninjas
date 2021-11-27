@@ -11,5 +11,31 @@
   
 ## Izmir Fish Price Shiny App
 
+In this application, the price changes and data of the selected fish according to the months can be seen.
+
  [Izmir Fish Shiny](https://mef05g-rninjas.shinyapps.io/Fish_Price/)
+ 
+ 
+ ## Stack OverFlow Survey Analysis 
+ In this project, The Result of Stack Overflow Survey were investigated.
+ 
+This project consist of 3 main part:
+
+   1. [Preparation of the preprocessed data](https://pjournal.github.io/mef05-ustame/)
+    
+   2. [General information about data](https://pjournal.github.io/mef05-ustame/)
+    
+   3. [Exploratory Data Analysis](https://pjournal.github.io/mef05-ustame/)
+    
+         a. [Database Analyis](https://pjournal.github.io/mef05-stuncers/)
+         
+         b. [Language Analysis](https://pjournal.github.io/mef05-akbeleno/)
+         
+         c. [Salary Analyis](https://pjournal.github.io/mef05-emrecansi/)
+         
+          
+         
+
+ 
+ 
  
