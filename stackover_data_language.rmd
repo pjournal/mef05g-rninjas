@@ -1,0 +1,95 @@
+---
+title: "Language Analysis of Stack Overflow Survey"
+author: "RNinjas"
+date: "04 12 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(data.table)
+library(plotrix)
+library(plotly)
+```
+
+```{r , include=FALSE}
+
+stack_2017=readRDS('C:/Users/Meryem/Documents/stackoverflow_2017.rds')
+stack_2018=readRDS('C:/Users/Meryem/Documents/stackoverflow_2018.rds')
+stack_2019=readRDS('C:/Users/Meryem/Documents/stackoverflow_2019.rds')
+stack_2020=readRDS('C:/Users/Meryem/Documents/stackoverflow_2020.rds')
+stack_2021=readRDS('C:/Users/Meryem/Documents/stackoverflow_2021.rds')
+
+stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
+
+```
+
+## Language Analysis
+
+This part of the Stack OverFlow Survey Analysis, The languages worked and wanted to be learned were examined.
+
+Firstly, we made data preprocessing 3 parts.
+    1. LanguageWorked and LanguageDesire columns were splitted.
+    2. Spaces in values are removed.
+    3. Blank (Nas) valus are removed.
+    
+    
+
+```{r}
+Main_Laguage=stackover_full %>%
+  filter(!is.na(LanguageWorkedWith)) %>%
+  mutate(LanguageWorked = str_split(LanguageWorkedWith,pattern=';')) %>%
+  select(ResponseId,LanguageWorked)%>%
+  unnest(LanguageWorked) %>%
+  mutate(LanguageWorked=gsub("\\([^)]*)", "",LanguageWorked))%>%
+  filter(LanguageWorked !="")
+
+Desired_Language=stackover_full %>%
+  filter(!is.na(LanguageDesireNextYear)) %>%
+  mutate(LanguageDesire = str_split(LanguageDesireNextYear,pattern=';')) %>%
+  select(ResponseId,LanguageDesire)%>%
+  unnest(LanguageDesire) %>%
+  mutate(LanguageDesire=gsub("\\([^)]*)", "",LanguageDesire))%>%
+  filter(LanguageDesire !="")
+```
+
+
+Grouping by Language and showing them as Percantage: 
+
+```{r}
+Main_Laguage = Main_Laguage %>%mutate(Language = LanguageWorked) %>%
+  group_by(Language) %>%
+  summarize(Perc_worked=round(n()/nrow(stackover_full)*100,2)) %>%
+  arrange(desc(Perc_worked))
+
+Desired_Language= Desired_Language%>%mutate(Language = LanguageDesire)%>%
+  group_by(Language) %>%
+  summarize(Perc_desire=round(n()/nrow(stackover_full)*100,2)) %>%
+  arrange(desc(Perc_desire))
+
+```
+  
+Merging Top20 desaired and main laguage columns; 
+  
+```{r}
+final_language=merge(x=Main_Laguage,y=Desired_Language,by="Language", all=TRUE )%>%arrange(desc(Perc_worked))%>% head(20)
+final_language
+```
+
+As a final, visualizing it with pyramid;
+
+```{r}
+len_language=max(nchar(final_language$Language))
+
+par(mar = pyramid.plot(final_language$Perc_worked, final_language$Perc_desire, labels =final_language$Language,
+                       top.labels=c("Language Worked","","Language Desired"), main = "Language Worked with and will desire to work next",
+                       gap=len_language, show.values = T))
+                       ```
+```
+
+The graphic shows that; rate of Language worked is higher than desired in Top20 except Go, Kotlin, TypeScript and Pyhton. 
+
+
+
