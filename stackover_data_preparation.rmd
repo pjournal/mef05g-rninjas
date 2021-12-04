@@ -1,6 +1,6 @@
 ---
-title: "stackoverflow_preparation"
-author: "Meryem Usta"
+title: "Stack Overflow Preparation"
+author: "RNinjas"
 date: "04 12 2021"
 output: html_document
 ---
