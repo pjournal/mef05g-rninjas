@@ -30,7 +30,7 @@ In this application, the price changes and data of the selected fish according t
     
          a. [Database Analyis](stackover_data_database.html)
          
-         b. [Language Analysis](https://pjournal.github.io/mef05-akbeleno/)
+         b. [Language Analysis](stackover_data_language.html)
          
          c. [Salary Analyis](https://pjournal.github.io/mef05-emrecansi/)
          
