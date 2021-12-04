@@ -22,7 +22,7 @@ In this application, the price changes and data of the selected fish according t
   
  This project consist of 3 main part:
 
-   1. [Preparation of the preprocessed data](https://pjournal.github.io/mef05-ustame/)
+   1. [Preparation of the preprocessed data](stackover_data_preparation.html)
     
    2. [General information about data](https://pjournal.github.io/mef05-ustame/)
     
