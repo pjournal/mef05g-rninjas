@@ -28,7 +28,7 @@ In this application, the price changes and data of the selected fish according t
     
    3. [Exploratory Data Analysis](https://pjournal.github.io/mef05-ustame/)
     
-         a. [Database Analyis](https://pjournal.github.io/mef05-stuncers/)
+         a. [Database Analyis](stackover_data_database.html)
          
          b. [Language Analysis](https://pjournal.github.io/mef05-akbeleno/)
          
