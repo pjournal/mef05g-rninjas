@@ -24,7 +24,7 @@ In this application, the price changes and data of the selected fish according t
 
    1. [Preparation of the preprocessed data](stackover_data_preparation.html)
     
-   2. [General information about data](https://pjournal.github.io/mef05-ustame/)
+   2. [General information about data](stackover_data_general.html)
     
    3. [Exploratory Data Analysis](https://pjournal.github.io/mef05-ustame/)
     
