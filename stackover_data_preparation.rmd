@@ -1,0 +1,64 @@
+---
+title: "stackoverflow_preparation"
+author: "Meryem Usta"
+date: "04 12 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+```
+
+## Stack OverFlow Data Preparation
+
+[Stackoverflow Survey](https://insights.stackoverflow.com/survey) data of the last 5 years have been brought together. While some of the questions had the same meaning, they were asked with different naming. For this reason, data fusion was done by analyzing the columns.
+Generally, a study was carried out on combining the variables to be analyzed.
+
+In the data, some variables were answered on an interval basis in different years, while point answers were given in other years, such as age.
+
+After variables were analyzed, the last five years data of Stack OverFlow Survey uploaded [Github](https://github.com/pjournal/mef05g-rninjas)
+
+In order to upload the file to Github, the data was splitted according to the years.
+
+
+```{r,eval = FALSE}
+allNames <- names(stackoverfull)
+for(thisName in allNames){
+  saveName = paste0('stackoverflow_',thisName, '.rds')
+  saveRDS(stackoverfull[[thisName]], file = saveName)
+}
+  
+```
+
+After [Split Data's](https://github.com/pjournal/mef05g-rninjas) is downloaded, they are combined as follows. ```stackover_full``` is merged data that all analyzes were performed using this data.
+
+ ```stackover_full``` consists of 342 variables and 387030 row data.
+
+
+```{r stackover_full ,eval = FALSE}
+stack_2017=readRDS('stackoverflow_2017.rds')
+stack_2018=readRDS('stackoverflow_2018.rds')
+stack_2019=readRDS('stackoverflow_2019.rds')
+stack_2020=readRDS('stackoverflow_2020.rds')
+stack_2021=readRDS('stackoverflow_2021.rds')
+
+stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
+str(stackover_full)
+
+```
+
+
+
+```{r , include=FALSE}
+
+stack_2017=readRDS('C:/Users/Meryem/Documents/stackoverflow_2017.rds')
+stack_2018=readRDS('C:/Users/Meryem/Documents/stackoverflow_2018.rds')
+stack_2019=readRDS('C:/Users/Meryem/Documents/stackoverflow_2019.rds')
+stack_2020=readRDS('C:/Users/Meryem/Documents/stackoverflow_2020.rds')
+stack_2021=readRDS('C:/Users/Meryem/Documents/stackoverflow_2021.rds')
+
+stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
+str(stackover_full)
+
+```
