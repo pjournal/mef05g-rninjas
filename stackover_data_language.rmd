@@ -86,10 +86,11 @@ len_language=max(nchar(final_language$Language))
 par(mar = pyramid.plot(final_language$Perc_worked, final_language$Perc_desire, labels =final_language$Language,
                        top.labels=c("Language Worked","","Language Desired"), main = "Language Worked with and will desire to work next",
                        gap=len_language, show.values = T))
-                       ```
+                       
 ```
 
 The graphic shows that; rate of Language worked is higher than desired in Top20 except Go, Kotlin, TypeScript and Pyhton. 
 
 
+[All EDA](stackover_data_full_eda.html)
 

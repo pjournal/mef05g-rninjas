@@ -62,3 +62,6 @@ stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
 str(stackover_full)
 
 ```
+
+Next [General Analysis](stackover_data_general.html)
+

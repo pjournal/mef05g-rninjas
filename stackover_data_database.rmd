@@ -180,4 +180,7 @@ In below graph we analyze the most recent data we have from survey that has been
   ggplot(aes(x=DatabaseDesireNextYear,y=n, fill = DatabaseDesireNextYear)) + geom_col(position=position_dodge()) + scale_fill_discrete()
 
   
-  ```
+```
+
+Before [Database Analysis](stackover_data_database.html)  After  [Language Analysis](stackover_data_language.html)
+  

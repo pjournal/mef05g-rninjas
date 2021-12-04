@@ -281,5 +281,8 @@ highchart() %>%
   hc_add_series(edleveldist, type = "bar", hcaes(x = Year, group = EdLevel_Bucket, y = n)) %>% 
   hc_xAxis(categories = edleveldist$EdLevel_Bucket)
 
-
 ```
+
+Before [Data Preparation](stackover_data_preparation.html)  After  [Database Analysis](stackover_data_database.html)
+
+
