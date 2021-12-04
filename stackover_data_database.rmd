@@ -1,0 +1,183 @@
+---
+title: "Database Analysis of Stack Overflow Survey"
+author: "RNinjas"
+date: "04 12 2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(data.table)
+library(gdata)
+library(readr)
+```
+
+## Popularity of Database Environments 
+
+In this section we will analyze respondents' answers to questions in regards to database environments they have worked with and database environments that they wish to work. We wish to observe database trends and see the top database environments preferred in the last 5 years. Respondents' answers to these questions have been kept in the columns specified below. Respondents were able to give more than one answer for each question.
+
+**Question:** Which database environments have you done extensive development work in over the past year?
+<br>**Related column:** DatabaseWorkedWith
+
+**Question:** Which database environments do you want to work in over the next year?
+<br>**Related column:** DatabaseDesireNextYear
+
+Firstly we load necessary packages and read stackoverflow data.
+
+```{r , include=FALSE}
+
+stack_2017=readRDS('C:/Users/Meryem/Documents/stackoverflow_2017.rds')
+stack_2018=readRDS('C:/Users/Meryem/Documents/stackoverflow_2018.rds')
+stack_2019=readRDS('C:/Users/Meryem/Documents/stackoverflow_2019.rds')
+stack_2020=readRDS('C:/Users/Meryem/Documents/stackoverflow_2020.rds')
+stack_2021=readRDS('C:/Users/Meryem/Documents/stackoverflow_2021.rds')
+
+stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
+
+```
+
+
+We display values of the columns we are interested in to see if we need to make any further pre-processing.
+
+<br>**Column:** DatabaseWorkedWith
+```{r}
+head(unique(stackover_full$DatabaseWorkedWith))
+
+```
+
+
+<br>**Column:** DatabaseDesireNextYear
+```{r}
+head(unique(stackover_full$DatabaseDesireNextYear))
+```
+
+We notice that there is a need to do some coding to split the data and trim some values due to redundant spacings.
+
+<br> In visualization below we see top 5 database environments that respondents have used most in the last 5 years worldwide.
+
+```{r}
+
+  stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  head(n=5) %>%
+  ggplot(aes(x= reorder(DatabaseWorkedWith,n),y=n,fill=DatabaseWorkedWith)) +
+  geom_bar(stat='identity') + coord_flip() +theme_classic() +
+  labs(title='Top 5 DBs respondents worked (2017-2021) - WW',y='frequency',x=NULL) + theme(legend.position ='none')
+
+
+```
+
+We were curious to see if top DB environments repondents in Turkey worked differ from preferences worldwide.
+
+```{r}
+
+stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Country == "Turkey") %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  head(n=5) %>%
+  ggplot(aes(x= reorder(DatabaseWorkedWith,n),y=n,fill=DatabaseWorkedWith)) +
+  geom_bar(stat='identity') + coord_flip() +theme_classic() +
+  labs(title='Top 5 DBs respondents worked (2017-2021) - TR',y='frequency',x=NULL) + theme(legend.position ='none')
+
+```
+
+We see that top 5 database environments that attendants worked with in Turkey are in line with what's popular globally.<br>
+<br> 1. MYSQL
+<br> 2. POSTGRESQL
+<br> 3. SQLITE
+<br> 4. MONGODB
+<br> 5. MICROSOFT SQL SERVER
+
+
+In visualization below we can observe popularity of top 3 database environments over time. We notice that MYSQL has been always at the top of the list over the last 5 years.
+
+```{r}
+
+db_use_2017 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2017) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2018 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2018) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2019 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2019) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2020 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2020) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2021 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2021) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_all = rbind(db_use_2017,db_use_2018,db_use_2019,db_use_2020,db_use_2021)
+
+
+db_use_all %>%
+  ggplot(aes(x = Year, ,y=n, fill = DatabaseWorkedWith)) + geom_col(position=position_dodge()) + scale_fill_discrete()
+
+```
+
+In below graph we analyze the most recent data we have from survey that has been conducted in 2021, based on respondents' answers on which DB environment they wish to work next year, in 2022. You can see top 5 environments desired. According to the survey results, POSTGRESQL may be more popular than MYSQL in 2022.
+```{r}
+
+  stackover_full %>%
+  filter(!is.na(DatabaseDesireNextYear)) %>%
+  filter(Year==2021) %>%
+  mutate(DatabaseDesireNextYear= trim(str_split(toupper(DatabaseDesireNextYear),pattern=';'))) %>%
+  unnest(DatabaseDesireNextYear) %>%
+  group_by(DatabaseDesireNextYear,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=5) %>%
+  ggplot(aes(x=DatabaseDesireNextYear,y=n, fill = DatabaseDesireNextYear)) + geom_col(position=position_dodge()) + scale_fill_discrete()
+
+  
+  ```
