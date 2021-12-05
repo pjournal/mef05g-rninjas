@@ -34,12 +34,12 @@ Firstly, we made data preprocessing 3 parts.
     1. LanguageWorked and LanguageDesire columns were splitted.
     2. Spaces in values are removed.
     3. Blank (Nas) valus are removed.
-    
+    4. Filtered by Turkey.
     
 
 ```{r}
 Main_Laguage=stackover_full %>%
-  filter(!is.na(LanguageWorkedWith)) %>%
+  filter(!is.na(LanguageWorkedWith)) %>%filter(country == "Turkey")
   mutate(LanguageWorked = str_split(LanguageWorkedWith,pattern=';')) %>%
   select(ResponseId,LanguageWorked)%>%
   unnest(LanguageWorked) %>%
@@ -47,7 +47,7 @@ Main_Laguage=stackover_full %>%
   filter(LanguageWorked !="")
 
 Desired_Language=stackover_full %>%
-  filter(!is.na(LanguageDesireNextYear)) %>%
+  filter(!is.na(LanguageDesireNextYear)) %>% filter(country == "Turkey")
   mutate(LanguageDesire = str_split(LanguageDesireNextYear,pattern=';')) %>%
   select(ResponseId,LanguageDesire)%>%
   unnest(LanguageDesire) %>%
