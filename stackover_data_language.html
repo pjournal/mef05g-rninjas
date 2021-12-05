@@ -176,7 +176,7 @@ pre code {
 <p>This part of the Stack OverFlow Survey Analysis, The languages worked and wanted to be learned were examined.</p>
 <p>Firstly, we made data preprocessing 3 parts. 1. LanguageWorked and LanguageDesire columns were splitted. 2. Spaces in values are removed. 3. Blank (Nas) valus are removed.</p>
 <pre class="r"><code>Main_Laguage=stackover_full %&gt;%
-  filter(!is.na(LanguageWorkedWith)) %&gt;%
+  filter(!is.na(LanguageWorkedWith)) %&gt;% filter(Country == "Turkey") %&gt;%
   mutate(LanguageWorked = str_split(LanguageWorkedWith,pattern=&#39;;&#39;)) %&gt;%
   select(ResponseId,LanguageWorked)%&gt;%
   unnest(LanguageWorked) %&gt;%
@@ -184,7 +184,7 @@ pre code {
   filter(LanguageWorked !=&quot;&quot;)
 
 Desired_Language=stackover_full %&gt;%
-  filter(!is.na(LanguageDesireNextYear)) %&gt;%
+  filter(!is.na(LanguageDesireNextYear)) %&gt;% filter(Country == "Turkey") %&gt;%
   mutate(LanguageDesire = str_split(LanguageDesireNextYear,pattern=&#39;;&#39;)) %&gt;%
   select(ResponseId,LanguageDesire)%&gt;%
   unnest(LanguageDesire) %&gt;%
