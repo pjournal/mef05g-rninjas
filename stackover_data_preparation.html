@@ -176,23 +176,106 @@ pre code {
 <p><a href="https://insights.stackoverflow.com/survey">Stackoverflow Survey</a> data of the last 5 years have been brought together. While some of the questions had the same meaning, they were asked with different naming. For this reason, data fusion was done by analyzing the columns. Generally, a study was carried out on combining the variables to be analyzed.</p>
 <p>In the data, some variables were answered on an interval basis in different years, while point answers were given in other years, such as age.</p>
 <p>After variables were analyzed, the last five years data of Stack OverFlow Survey uploaded <a href="https://github.com/pjournal/mef05g-rninjas">Github</a></p>
-<p>In order to upload the file to Github, the data was splitted according to the years.</p>
-<pre class="r"><code>allNames &lt;- names(stackoverfull)
-for(thisName in allNames){
-  saveName = paste0(&#39;stackoverflow_&#39;,thisName, &#39;.rds&#39;)
-  saveRDS(stackoverfull[[thisName]], file = saveName)
-}</code></pre>
-<p>After <a href="https://github.com/pjournal/mef05g-rninjas">Split Data’s</a> is downloaded, they are combined as follows. <code>stackover_full</code> is merged data that all analyzes were performed using this data.</p>
-<p><code>stackover_full</code> consists of 342 variables and 387030 row data.</p>
-<pre class="r"><code>stack_2017=readRDS(&#39;stackoverflow_2017.rds&#39;)
-stack_2018=readRDS(&#39;stackoverflow_2018.rds&#39;)
-stack_2019=readRDS(&#39;stackoverflow_2019.rds&#39;)
-stack_2020=readRDS(&#39;stackoverflow_2020.rds&#39;)
-stack_2021=readRDS(&#39;stackoverflow_2021.rds&#39;)
+<p>Firstly we start with reading csv files to compare the years and information. There are many different types of columns therefore we had to handle that shows many different columns. Therefore we determined data that we want to analyze.</p>
+<p>“ResponseId” “Year” “MainBranch” “Age” “Age1stCode” “CompFreq” “CompTotal” “Country” “DevType” “EdLevel” “Employment” “Ethnicity” “Gender” “OpSys” “OrgSize” “Sexuality” “SOAccount” “SOComm” “SOPartFreq” “SOVisitFreq” “SurveyEase” “SurveyLength” “Trans” “YearsCode” “YearsCodePro” “mainbranch” “age” “agefirst” “Edlevel” “country” “LanguageDesireNextYear” “LanguageWorkedWith” “databaseworkedwith”</p>
+<p>After that point we started to review the data frames by download and uploading it to system. We have changed frameworks’ column name to merge them correctly such as ResponseID and Respondent.There were many different column names.</p>
+<p>As you can see here the table column names also as a vector.</p>
+<pre class="r"><code>Stackof2021 &lt;- read.csv(&quot;survey_results_public.csv&quot;)
 
-stackover_full &lt;- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
-str(stackover_full)</code></pre>
-<p>Next <a href="stackover_data_general.html">General Analysis</a></p>
+Stackof2021[&quot;Year&quot;] &lt;- 2021
+Stackof2021 &lt;- Stackof2021 %&gt;% select(ResponseId, Year, everything())
+colnames2021&lt;-colnames(Stackof2021)
+
+#For 2020
+
+Stackof2020 &lt;- read.csv(&quot;survey_results_public.csv&quot;)
+Stackof2020[&quot;Year&quot;] &lt;- 2020
+Stackof2020 &lt;- Stackof2020 %&gt;% select(Respondent, Year, everything())
+colnames(Stackof2020)[1] &lt;- &quot;ResponseId&quot;
+colnames2020&lt;-colnames(Stackof2020)
+
+#2019
+
+Stackof2019 &lt;- read.csv(&quot;survey_results_public.csv&quot;)
+Stackof2019[&quot;Year&quot;] &lt;- 2019
+Stackof2019 &lt;- Stackof2019 %&gt;% select(Respondent, Year, everything())
+colnames(Stackof2019)[1] &lt;- &quot;ResponseId&quot;
+colnames2019&lt;-colnames(Stackof2019)
+
+#2018
+
+Stackof2018 &lt;- read.csv(&quot;survey_results_public.csv&quot;)
+Stackof2018[&quot;Year&quot;] &lt;- 2018
+Stackof2018 &lt;- Stackof2018 %&gt;% select(Respondent, Year, everything())
+colnames(Stackof2018)[1] &lt;- &quot;ResponseId&quot;
+colnames2018&lt;-colnames(Stackof2018)
+
+#2017
+
+Stackof2017 &lt;- read.csv(&quot;survey_results_public.csv&quot;)
+Stackof2017[&quot;Year&quot;] &lt;- 2017
+Stackof2017 &lt;- Stackof2017 %&gt;% select(Respondent, Year, everything())
+colnames(Stackof2017)[1] &lt;- &quot;ResponseId&quot;
+colnames2017&lt;-colnames(Stackof2017)
+
+Reduce(intersect, list(colnames2021,colnames2020,colnames2019, colnames2018))  
+
+##Here we look the data that has same colnames.
+
+Reduce(intersect, list(colnames2021,colnames2020,colnames2019, colnames2018, colnames2017))  </code></pre>
+<p>Here we started to changing and merging different years data.</p>
+<pre class="r"><code>Stackof2020$Age&lt;-cut(Stackof2020$Age, c(0, 18, 24, 35, 44, 54, 65, Inf),
+                     c(&quot;Under 18 years old&quot;, &quot;18 - 24 years old&quot;, &quot;25 - 34 years old&quot;, &quot;35 - 44 years old&quot;, &quot;45 - 54 years old&quot;,&quot;55 - 64 Years Old&quot;,&quot;65 years or older&quot;),
+                     include.lowest=TRUE)
+
+Stackof2019$Age&lt;-cut(Stackof2019$Age,
+                     c(0, 18, 24, 35, 44, 54, 65, Inf), c(&quot;Under 18 years old&quot;, &quot;18 - 24 years old&quot;, &quot;25 - 34 years old&quot;, &quot;35 - 44 years old&quot;, &quot;45 - 54 years old&quot;,
+                                                          &quot;55 - 64 Years Old&quot;,&quot;65 years or older&quot;),
+                     include.lowest=TRUE)
+
+Stackof2019$Age&lt;-as.character(Stackof2019$Age)
+
+Stackof2020$Age&lt;-as.character(Stackof2020$Age)
+
+Stackof2017$CareerSatisfaction&lt;-cut(Stackof2017$CareerSatisfaction, c(0, 1, 2, 4, 5, 6, 9, 10),
+                                    c(&quot;Extremely dissatisfied&quot;, &quot;Moderately dissatisfied&quot;, &quot;Slightly dissatisfied&quot;, &quot;Neither satisfied nor dissatisfied&quot;, &quot;Slightly
+                                      satisfied&quot;,&quot;Moderately satisfied&quot;,&quot;Extremely satisfied&quot;),
+                                    include.lowest=TRUE)
+
+Stackof2017$CareerSatisfaction&lt;-as.character(Stackof2017$CareerSatisfaction)
+
+Stackof2017 %&gt;% dplyr::distinct(Stackof2017$CareerSatisfaction)
+Stackof2018 %&gt;% dplyr::distinct(Stackof2018$CareerSatisfaction)
+
+
+Stackof2017$JobSatisfaction&lt;-cut(Stackof2017$JobSatisfaction,
+                                 c(0, 1, 2, 4, 5, 6, 9, 10),
+                                 c(&quot;Extremely dissatisfied&quot;, &quot;Moderately dissatisfied&quot;, &quot;Slightly dissatisfied&quot;, &quot;Neither satisfied nor dissatisfied&quot;, 
+                                   &quot;Slightly satisfied&quot;,&quot;Moderately satisfied&quot;,&quot;Extremely satisfied&quot;),
+                                 include.lowest=TRUE)
+
+Stackof2017$JobSatisfaction&lt;-as.character(Stackof2017$JobSatisfaction)</code></pre>
+<p>Here we have changed the type of tdata because of inconsistancy of dataframes.</p>
+<pre class="r"><code>Stackof2017$Salary&lt;-as.numeric(Stackof2017$Salary)
+Stackof2018$Salary&lt;-as.numeric(Stackof2018$Salary)
+
+Stackof2017 %&gt;% dplyr::distinct(Stackof2017$Salary)</code></pre>
+<p>We have controlled if there is any blank column or row after merging them.</p>
+<pre class="r"><code>Stackofbinded &lt;- bind_rows(Stackof2017,Stackof2018,Stackof2019,Stackof2020,Stackof2021)
+
+Stackofbinded &lt;- Stackofbinded[, colSums(is.na(Stackofbinded)) != nrow(Stackofbinded)]</code></pre>
+<p>Then we write it our computers to back up.</p>
+<pre class="r"><code>fwrite(Stackofbinded,file=&quot;Stackofbinded2.csv&quot;, sep=&quot;,&quot;)
+
+Stackofbinded &lt;- read.csv(&quot;Stackofbinded.csv&quot;)
+
+colnamesall&lt;-colnames(Stackofbinded)
+
+colnamesall
+
+unique_rows &lt;- !duplicated(Stackofbinded[c(&quot;Year&quot;)])
+unique.df &lt;- Stackofbinded[unique_rows,]</code></pre>
+<p>And our data is ready to go.</p>
 </div>
 
 

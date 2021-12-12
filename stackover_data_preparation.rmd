@@ -19,49 +19,168 @@ In the data, some variables were answered on an interval basis in different year
 
 After variables were analyzed, the last five years data of Stack OverFlow Survey uploaded [Github](https://github.com/pjournal/mef05g-rninjas)
 
-In order to upload the file to Github, the data was splitted according to the years.
 
+Firstly we start with reading csv files to compare the years and information. There are many different types of columns therefore we had to handle that shows many different columns. Therefore we determined data that we want to analyze.
 
-```{r,eval = FALSE}
-allNames <- names(stackoverfull)
-for(thisName in allNames){
-  saveName = paste0('stackoverflow_',thisName, '.rds')
-  saveRDS(stackoverfull[[thisName]], file = saveName)
-}
-  
-```
+"ResponseId"
+"Year"
+"MainBranch"
+"Age"
+"Age1stCode"
+"CompFreq"
+"CompTotal"
+"Country"
+"DevType"
+"EdLevel"
+"Employment"
+"Ethnicity"
+"Gender"
+"OpSys"
+"OrgSize"
+"Sexuality"
+"SOAccount"
+"SOComm"
+"SOPartFreq"
+"SOVisitFreq"
+"SurveyEase"
+"SurveyLength"
+"Trans"
+"YearsCode"
+"YearsCodePro"
+"mainbranch"
+"age"
+"agefirst"
+"Edlevel"
+"country"
+"LanguageDesireNextYear"
+"LanguageWorkedWith"
+"databaseworkedwith"
 
-After [Split Data's](https://github.com/pjournal/mef05g-rninjas) is downloaded, they are combined as follows. ```stackover_full``` is merged data that all analyzes were performed using this data.
+After that point we started to review the data frames by download and uploading it to system. We have changed frameworks' column name to merge them correctly such as ResponseID and Respondent.There were many different column names. 
 
- ```stackover_full``` consists of 342 variables and 387030 row data.
-
+As you can see here the table column names also as a vector.
 
 ```{r stackover_full ,eval = FALSE}
-stack_2017=readRDS('stackoverflow_2017.rds')
-stack_2018=readRDS('stackoverflow_2018.rds')
-stack_2019=readRDS('stackoverflow_2019.rds')
-stack_2020=readRDS('stackoverflow_2020.rds')
-stack_2021=readRDS('stackoverflow_2021.rds')
+Stackof2021 <- read.csv("survey_results_public.csv")
 
-stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
-str(stackover_full)
+Stackof2021["Year"] <- 2021
+Stackof2021 <- Stackof2021 %>% select(ResponseId, Year, everything())
+colnames2021<-colnames(Stackof2021)
+
+#For 2020
+
+Stackof2020 <- read.csv("survey_results_public.csv")
+Stackof2020["Year"] <- 2020
+Stackof2020 <- Stackof2020 %>% select(Respondent, Year, everything())
+colnames(Stackof2020)[1] <- "ResponseId"
+colnames2020<-colnames(Stackof2020)
+
+#2019
+
+Stackof2019 <- read.csv("survey_results_public.csv")
+Stackof2019["Year"] <- 2019
+Stackof2019 <- Stackof2019 %>% select(Respondent, Year, everything())
+colnames(Stackof2019)[1] <- "ResponseId"
+colnames2019<-colnames(Stackof2019)
+
+#2018
+
+Stackof2018 <- read.csv("survey_results_public.csv")
+Stackof2018["Year"] <- 2018
+Stackof2018 <- Stackof2018 %>% select(Respondent, Year, everything())
+colnames(Stackof2018)[1] <- "ResponseId"
+colnames2018<-colnames(Stackof2018)
+
+#2017
+
+Stackof2017 <- read.csv("survey_results_public.csv")
+Stackof2017["Year"] <- 2017
+Stackof2017 <- Stackof2017 %>% select(Respondent, Year, everything())
+colnames(Stackof2017)[1] <- "ResponseId"
+colnames2017<-colnames(Stackof2017)
+
+Reduce(intersect, list(colnames2021,colnames2020,colnames2019, colnames2018))  
+
+##Here we look the data that has same colnames.
+
+Reduce(intersect, list(colnames2021,colnames2020,colnames2019, colnames2018, colnames2017))  
 
 ```
 
 
+Here we started to changing and merging different years data.
 
-```{r , include=FALSE}
+```{r ,eval = FALSE}
+Stackof2020$Age<-cut(Stackof2020$Age, c(0, 18, 24, 35, 44, 54, 65, Inf),
+                     c("Under 18 years old", "18 - 24 years old", "25 - 34 years old", "35 - 44 years old", "45 - 54 years old","55 - 64 Years Old","65 years or older"),
+                     include.lowest=TRUE)
 
-stack_2017=readRDS('C:/Users/Meryem/Documents/stackoverflow_2017.rds')
-stack_2018=readRDS('C:/Users/Meryem/Documents/stackoverflow_2018.rds')
-stack_2019=readRDS('C:/Users/Meryem/Documents/stackoverflow_2019.rds')
-stack_2020=readRDS('C:/Users/Meryem/Documents/stackoverflow_2020.rds')
-stack_2021=readRDS('C:/Users/Meryem/Documents/stackoverflow_2021.rds')
+Stackof2019$Age<-cut(Stackof2019$Age,
+                     c(0, 18, 24, 35, 44, 54, 65, Inf), c("Under 18 years old", "18 - 24 years old", "25 - 34 years old", "35 - 44 years old", "45 - 54 years old",
+                                                          "55 - 64 Years Old","65 years or older"),
+                     include.lowest=TRUE)
 
-stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
-str(stackover_full)
+Stackof2019$Age<-as.character(Stackof2019$Age)
+
+Stackof2020$Age<-as.character(Stackof2020$Age)
+
+Stackof2017$CareerSatisfaction<-cut(Stackof2017$CareerSatisfaction, c(0, 1, 2, 4, 5, 6, 9, 10),
+                                    c("Extremely dissatisfied", "Moderately dissatisfied", "Slightly dissatisfied", "Neither satisfied nor dissatisfied", "Slightly
+                                      satisfied","Moderately satisfied","Extremely satisfied"),
+                                    include.lowest=TRUE)
+
+Stackof2017$CareerSatisfaction<-as.character(Stackof2017$CareerSatisfaction)
+
+Stackof2017 %>% dplyr::distinct(Stackof2017$CareerSatisfaction)
+Stackof2018 %>% dplyr::distinct(Stackof2018$CareerSatisfaction)
+
+
+Stackof2017$JobSatisfaction<-cut(Stackof2017$JobSatisfaction,
+                                 c(0, 1, 2, 4, 5, 6, 9, 10),
+                                 c("Extremely dissatisfied", "Moderately dissatisfied", "Slightly dissatisfied", "Neither satisfied nor dissatisfied", 
+                                   "Slightly satisfied","Moderately satisfied","Extremely satisfied"),
+                                 include.lowest=TRUE)
+
+Stackof2017$JobSatisfaction<-as.character(Stackof2017$JobSatisfaction)
+```
+
+Here we have changed the type of tdata because of inconsistancy of dataframes.
+
+```{r ,eval = FALSE}
+Stackof2017$Salary<-as.numeric(Stackof2017$Salary)
+Stackof2018$Salary<-as.numeric(Stackof2018$Salary)
+
+Stackof2017 %>% dplyr::distinct(Stackof2017$Salary)
+
 
 ```
 
-Next [General Analysis](stackover_data_general.html)
+We have controlled if there is any blank column or row after merging them.
+
+```{r ,eval = FALSE}
+Stackofbinded <- bind_rows(Stackof2017,Stackof2018,Stackof2019,Stackof2020,Stackof2021)
+
+Stackofbinded <- Stackofbinded[, colSums(is.na(Stackofbinded)) != nrow(Stackofbinded)]
+```
+
+
+Then we write it our computers to back up.
+
+
+```{r ,eval = FALSE}
+fwrite(Stackofbinded,file="Stackofbinded2.csv", sep=",")
+
+Stackofbinded <- read.csv("Stackofbinded.csv")
+
+colnamesall<-colnames(Stackofbinded)
+
+colnamesall
+
+unique_rows <- !duplicated(Stackofbinded[c("Year")])
+unique.df <- Stackofbinded[unique_rows,]
+
+
+```
+
+And our data is ready to go.
 
