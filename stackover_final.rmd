@@ -1,0 +1,893 @@
+---
+title: "Stack Overflow Explority Data Analysis"
+author: "RNinjas"
+date: "04 12 2021"
+output: 
+  html_document:
+    code_folding: hide
+    toc: yes
+    toc_float: yes    
+    theme: cerulean
+    highlight: pygments    
+  pdf_document:
+    toc: yes    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(tidyverse)
+library(highcharter)
+library(sqldf)
+library(treemapify)
+library(ggplot2)
+library(data.table)
+library(gdata)
+library(dplyr)
+library(plotrix)
+library(plotly)
+library(psych)
+library(dplyr)
+```
+
+```{r , include=FALSE}
+
+stack_2017=read.csv(file = 'https://raw.githubusercontent.com/pjournal/mef05g-rninjas/gh-pages/stackover2017.csv',stringsAsFactors = FALSE, header = TRUE,sep = ",", encoding="UTF-8")
+stack_2018=read.csv(file = 'https://raw.githubusercontent.com/pjournal/mef05g-rninjas/gh-pages/stackover2018.csv',stringsAsFactors = FALSE, header = TRUE,sep = ",", encoding="UTF-8")
+stack_2019=read.csv(file = 'https://raw.githubusercontent.com/pjournal/mef05g-rninjas/gh-pages/stackover2019.csv',stringsAsFactors = FALSE, header = TRUE,sep = ",", encoding="UTF-8")
+stack_2020=read.csv(file = 'https://raw.githubusercontent.com/pjournal/mef05g-rninjas/gh-pages/stackover2020.csv',stringsAsFactors = FALSE, header = TRUE,sep = ",", encoding="UTF-8")
+stack_2021=read.csv(file = 'https://raw.githubusercontent.com/pjournal/mef05g-rninjas/gh-pages/stackover2021.csv',stringsAsFactors = FALSE, header = TRUE,sep = ",", encoding="UTF-8")
+
+stackover_full <- rbind(stack_2017, stack_2018,stack_2019,stack_2020,stack_2021)
+
+```
+
+## General Information About Data
+
+*stackover_full* includes the last 5 years stack overflow survey results. This data consist of 342 variable and 387030 observations.
+
+When the number of participants by years is examined
+
+```{r stackoverflow2}
+stackover_full%>%group_by(Year)%>%count()
+```
+
+### Participant's Country  Analysis
+The survey participants have different countries.
+
+That there are looking at the unique value of countries, same country name spelled differently such as "United States" vs "United States of America".
+This type of data should be converted.
+
+```{r country1}
+head(unique(stackover_full$Country),20)
+```
+
+
+```{r country2}
+stackover_full=stackover_full%>% 
+  mutate(Country=case_when(Country=="United States of America" ~ "United States",
+                           Country=="United Kingdom of Great Britain and Northern Ireland" ~"United Kingdom",
+                           Country=="Viet Nam" ~"Vietnam",
+                           Country=="Iran, Islamic Republic of..." ~"Iran",
+                           Country=="Congo, Republic of the..." ~"Democratic Republic of the Congo",
+                           Country=="Venezuela, Bolivarian Republic of..." ~"Venezuela",
+                           Country=="Dominican Republic" ~"Dominica",
+                           Country=="The former Yugoslav Republic of Macedonia" ~"Macedonia",
+                           Country=="Libyan Arab Jamahiriya" ~"Libya",
+                           Country=="Slovak Republic" ~"Slovakia",
+                           Country=="Azerbaidjan" ~"Azerbaijan",
+                           Country=="Tadjikistan" ~"Tajikistan",
+                           Country=="Syrian Arab Republic" ~"Syria",
+                           Country=="Democratic People's Republic of Korea" ~"North Korea",
+                           Country=="Republic of Korea" ~"South Korea",
+                           Country=="United Republic of Tanzania" ~"Tanzania",
+                           Country=="Hong Kong (S.A.R.)" ~"Hong Kong",
+                           Country=="" ~"Not Responding",
+                           Country=="I prefer not to say" ~"Not Responding",
+                           TRUE ~Country))
+
+```
+
+After data cleaning according to Country, 
+
+Let see the distirbution participants.
+
+```{r country3}
+countrydist=stackover_full%>% 
+  group_by(Country) %>%
+  count()%>%
+  arrange(desc(Country))
+
+countrydist
+```
+
+
+Some country participant count is very low, so these data's are eliminated. 
+
+Countries with a below-average number of participants were excluded from the analysis.
+
+So, mean of participant count is 1653.974. After elimination, ```countrydist_elimination``` data frame have 44 countries that have above-average number of participants.
+
+Most of the participants are from United States, India, Germany, United Kingdom	 and Canada.
+
+```{r countrydist_elimination}
+countrydist_elimination=countrydist %>%
+  mutate(avg=mean(countrydist$n)) %>%
+  filter(n>avg) %>%
+  select(Country,n)%>%
+  arrange(desc(n))
+
+countrydist_elimination
+```
+
+Let see the graph number of participants by top 10 country.
+
+```{r country_graph}
+countrydist_graph=countrydist %>%
+  mutate(avg=mean(countrydist$n)) %>%
+  filter(n>avg) %>%
+  select(Country,n)%>%
+  arrange(desc(n)) %>%
+  head(15)
+
+
+ggplot(countrydist_graph, 
+       aes(fill = Country, 
+           area = n, 
+           label = Country)) +
+  geom_treemap() + 
+  geom_treemap_text(colour = "white", 
+                    place = "centre") +
+  labs(title = "Country Distribution") +
+  theme(legend.position = "none")
+
+```
+
+### Participant's Branch Analysis
+The survey participants have different branches.
+That there are looking at the unique value of branches:
+
+```{r mainBranch1}
+unique(stackover_full$MainBranch)
+```
+
+There are 6 unique branches. But since the response of the survey to this variable changes over the years, some values need to be converted.
+For example "I am a developer by profession"  is the same as "Professional developer".
+
+11 different categories reduced to 5 categories by doing the following conversion.
+```{r mainBranch2}
+stackover_full=stackover_full%>% 
+  mutate(MainBranch=case_when(MainBranch=="I am a developer by profession" ~ "Professional developer",
+                              MainBranch=="Used to be a professional developer" ~ "Professional developer",
+                              MainBranch=="I used to be a developer by profession, but no longer am" ~ "Professional developer",
+                              MainBranch=="I am a student who is learning to code" ~"Student",
+                              MainBranch=="Professional non-developer who sometimes writes code" ~ "Hobby",
+                              MainBranch=="I code primarily as a hobby" ~ "Hobby",
+                              MainBranch=="I am not primarily a developer, but I write code sometimes as part of my work" ~"Sometimes Coding",
+                              MainBranch=="" ~"None of these",
+                              is.na(MainBranch)==TRUE~"None of these",
+                              TRUE ~MainBranch))
+
+unique(stackover_full$MainBranch)
+```
+
+Looking at the distribution of categories over all participants:
+
+Stackoverflow is used by professional developers by %54.
+
+```{r mainBranch3}
+mainbranchdist=stackover_full%>%
+  group_by(MainBranch)%>%
+  count()%>%
+  mutate(perc_n=round(n/NROW(stackover_full)*100,2))%>%
+  arrange(desc(n))
+mainbranchdist
+```
+
+The branch of the participants' distribution chart:
+
+```{r mainbranchchart}
+hchart(mainbranchdist,hcaes(x=MainBranch,y=perc_n),type="column",name="Percentage",color="#80FF40") %>%  
+  hc_exporting(enabled = TRUE) %>%
+  hc_title(text="Distrubition of Participants",align="center") %>%
+  hc_add_theme(hc_theme_elementary()) 
+```
+
+In Turkey's situation:
+
+```{r mainBranch4}
+
+mainbranchdist2=stackover_full%>%filter(Country=='Turkey')%>%
+  group_by(MainBranch)%>%
+  count()%>%
+  mutate(perc_n=round(n/NROW(stackover_full%>%filter(Country=='Turkey'))*100,2))%>%
+  arrange(desc(n))
+mainbranchdist2
+```
+
+The branch of the participants' distribution chart in Turkey:
+
+```{r mainbranchchart_Turkey}
+hchart(mainbranchdist2,hcaes(x=MainBranch,y=perc_n),type="column",name="Percentage",color="#00FFFF") %>%  
+  hc_exporting(enabled = TRUE) %>%
+  hc_title(text="Distrubition of Participants in Turkey",align="center") %>%
+  hc_add_theme(hc_theme_elementary()) 
+```
+
+### Participant's Age  Analysis
+
+This site is used by people from different age groups.
+By looking at the age distribution of the participants, it can be determined which age range is used more actively.
+
+```{r age1}
+unique(stackover_full$Age)
+```
+
+Considering the age values, there is a need for regrouping.
+
+```{r age2}
+stackover_full=stackover_full%>%
+  mutate(Age=gsub(" years old", "", tolower(Age))) %>%
+  mutate(Age=gsub(" - ", "-", tolower(Age))) %>%
+  mutate(Age=case_when(Age=="" ~"Prefer not to say",Age=="prefer not to say" ~"Prefer not to say",TRUE ~Age))
+
+unique(stackover_full$Age)
+
+```
+
+When the age distribution by years is investigated:
+
+```{r agedist}
+agedist=stackover_full %>%
+  group_by(Year,Age) %>%
+  count() %>%
+  arrange(desc(Year,Age))
+
+agedist
+
+```
+
+
+Since the participants did not specify their ages in 2017, no inference can be made for this year.
+
+When the graph is examined, it can be said that the 24-34 age range is actively using stackoverflow.
+
+In recent years, it has been seen that the "18-24" and "under 18" age group uses stackoverflow more.
+In this way, it can be said that there is a tendency towards programming in the younger generation.
+
+
+```{r agedistchart}
+
+highchart() %>% 
+  hc_add_series(agedist, type = "bar", hcaes(x = Year, group = Age, y = n)) %>% 
+  hc_xAxis(categories = agedist$Age)
+
+
+```
+
+
+In Turkey, Age Distribution
+
+```{r agedist_Turkey}
+agedist_Turkey=stackover_full %>%filter(Country=='Turkey')%>%
+  group_by(Year,Age) %>%
+  count() %>%
+  arrange(desc(Year,Age))
+
+agedist_Turkey
+
+```
+
+Turkey's age distribution graph:
+
+```{r agedistchart_Turkey}
+
+highchart() %>% 
+  hc_add_series(agedist_Turkey, type = "bar", hcaes(x = Year, group = Age, y = n)) %>% 
+  hc_xAxis(categories = agedist_Turkey$Age)
+
+
+```
+
+### Participant's Education Level  Analysis
+
+When the education levels of the participants are examined, 21 different categories are in data.
+Actually, some categories are the same. But it seems different due to missing punctuation marks or spelling. For example "Master’s degree (MA, MS, M.Eng., MBA, etc.)" is the same "Master’s degree (M.A., M.S., M.Eng., MBA, etc.)", only punctuation marks are different.
+
+
+```{r edlevel1}
+unique(stackover_full$EdLevel)
+```
+
+
+This data should be rearrange .
+
+After data cleaning process, 21 different education level responses were reduced to 13.
+
+```{r edlevel2}
+
+stackover_full$EdLevel=gsub("\\([^)]*)", "",stackover_full$EdLevel)
+stackover_full$EdLevel=gsub("degree ","degree",stackover_full$EdLevel)
+stackover_full$EdLevel=gsub("’","'",stackover_full$EdLevel)
+stackover_full$EdLevel=gsub("without earning a bachelor's degree","without earning a degree",stackover_full$EdLevel)
+stackover_full$EdLevel=gsub("school ","school",stackover_full$EdLevel)
+unique(stackover_full$EdLevel)
+
+```
+
+These values were re-categorized according to the level of education.
+
+```{r edlevel3}
+
+stackover_full=stackover_full %>% 
+  mutate(EdLevel_Bucket=case_when(EdLevel %in% c("Secondary school","Primary/elementary school","Something else")~1,
+                                  EdLevel %in% c("Associate degre","Bachelor's degree")~2,
+                                  EdLevel %in% c("Doctoral degree","Master's degree","Other doctoral degree","Professional degree")~3,
+                                  EdLevel %in% c("I never completed any formal education","Some college/university study without earning a degree")~4,
+                                  EdLevel %in% c("I prefer not to answer","")~5,
+                                  TRUE ~6))
+
+
+edleveldist=stackover_full%>%group_by(Year,EdLevel_Bucket)%>%count()
+```
+
+When the graph is examined, Stack Overflow mostly is used by people that have *Associate degree* or *Bachelor's degree*.
+
+```{r edlevelchart}
+
+highchart() %>% 
+  hc_add_series(edleveldist, type = "bar", hcaes(x = Year, group = EdLevel_Bucket, y = n)) %>% 
+  hc_xAxis(categories = edleveldist$EdLevel_Bucket)
+
+```
+
+In Turkey, Education Level Distribution:
+When the graph is examined, Turkey distribution is as same as global's.
+
+```{r edlevelchart_Turkey}
+edleveldist_turkey=stackover_full%>%filter(Country=='Turkey')%>%group_by(Year,EdLevel_Bucket)%>%count()
+highchart() %>% 
+  hc_add_series(edleveldist_turkey, type = "bar", hcaes(x = Year, group = EdLevel_Bucket, y = n)) %>% 
+  hc_xAxis(categories = edleveldist_turkey$EdLevel_Bucket)
+
+```
+
+
+
+
+## Popularity of Database Environments 
+
+In this section we will analyze respondents' answers to questions in regards to database environments they have worked with and database environments that they wish to work. We wish to observe database trends and see the top database environments preferred in the last 5 years. Respondents' answers to these questions have been kept in the columns specified below. Respondents were able to give more than one answer for each question.
+
+**Question:** Which database environments have you done extensive development work in over the past year?
+<br>**Related column:** DatabaseWorkedWith
+
+**Question:** Which database environments do you want to work in over the next year?
+<br>**Related column:** DatabaseDesireNextYear
+
+
+We display values of the columns we are interested in to see if we need to make any further pre-processing.
+
+<br>**Column:** DatabaseWorkedWith
+```{r}
+head(unique(stackover_full$DatabaseWorkedWith))
+
+```
+
+
+<br>**Column:** DatabaseDesireNextYear
+```{r}
+head(unique(stackover_full$DatabaseDesireNextYear))
+```
+
+We notice that there is a need to do some coding to split the data and trim some values due to redundant spacings.
+
+<br> In visualization below we see top 5 database environments that respondents have used most in the last 5 years worldwide.
+
+```{r}
+
+  stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  head(n=5) %>%
+  ggplot(aes(x= reorder(DatabaseWorkedWith,n),y=n,fill=DatabaseWorkedWith)) +
+  geom_bar(stat='identity') + coord_flip() +theme_classic() +
+  labs(title='Top 5 DBs respondents worked (2017-2021) - WW',y='frequency',x=NULL) + theme(legend.position ='none')
+
+
+```
+
+We were curious to see if top DB environments repondents in Turkey worked differ from preferences worldwide.
+
+```{r}
+
+stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Country == "Turkey") %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  head(n=5) %>%
+  ggplot(aes(x= reorder(DatabaseWorkedWith,n),y=n,fill=DatabaseWorkedWith)) +
+  geom_bar(stat='identity') + coord_flip() +theme_classic() +
+  labs(title='Top 5 DBs respondents worked (2017-2021) - TR',y='frequency',x=NULL) + theme(legend.position ='none')
+
+```
+
+We see that top 5 database environments that attendants worked with in Turkey are in line with what's popular globally.<br>
+<br> 1. MYSQL
+<br> 2. POSTGRESQL
+<br> 3. SQLITE
+<br> 4. MONGODB
+<br> 5. MICROSOFT SQL SERVER
+
+
+In visualization below we can observe popularity of top 3 database environments over time. We notice that MYSQL has been always at the top of the list over the last 5 years.
+
+```{r}
+
+db_use_2017 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2017) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2018 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2018) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2019 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2019) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2020 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2020) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_2021 <- stackover_full %>%
+  filter(!is.na(DatabaseWorkedWith)) %>%
+  filter(Year==2021) %>%
+  mutate(DatabaseWorkedWith= trim(str_split(toupper(DatabaseWorkedWith),pattern=';'))) %>%
+  unnest(DatabaseWorkedWith) %>%
+  group_by(DatabaseWorkedWith,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=3) 
+
+db_use_all = rbind(db_use_2017,db_use_2018,db_use_2019,db_use_2020,db_use_2021)
+
+
+db_use_all %>%
+  ggplot(aes(x = Year, ,y=n, fill = DatabaseWorkedWith)) + geom_col(position=position_dodge()) + scale_fill_discrete()
+
+```
+
+In below graph we analyze the most recent data we have from survey that has been conducted in 2021, based on respondents' answers on which DB environment they wish to work next year, in 2022. You can see top 5 environments desired. According to the survey results, POSTGRESQL may be more popular than MYSQL in 2022.
+```{r}
+
+  stackover_full %>%
+  filter(!is.na(DatabaseDesireNextYear)) %>%
+  filter(Year==2021) %>%
+  mutate(DatabaseDesireNextYear= trim(str_split(toupper(DatabaseDesireNextYear),pattern=';'))) %>%
+  unnest(DatabaseDesireNextYear) %>%
+  group_by(DatabaseDesireNextYear,Year) %>%
+  count  %>%
+  arrange(desc(n)) %>%
+  head(n=5) %>%
+  ggplot(aes(x=DatabaseDesireNextYear,y=n, fill = DatabaseDesireNextYear)) + geom_col(position=position_dodge()) + scale_fill_discrete()
+
+  
+```
+
+## Language Analysis
+
+This part of the Stack OverFlow Survey Analysis, The languages worked and wanted to be learned were examined.
+
+Firstly, we made data preprocessing 3 parts.
+    1. LanguageWorked and LanguageDesire columns were splitted.
+    2. Spaces in values are removed.
+    3. Blank (Nas) valus are removed.
+    
+    
+
+```{r}
+Main_Laguage=stackover_full %>%
+  filter(!is.na(LanguageWorkedWith)) %>%
+  mutate(LanguageWorked = str_split(LanguageWorkedWith,pattern=';')) %>%
+  select(ResponseId,LanguageWorked)%>%
+  unnest(LanguageWorked) %>%
+  mutate(LanguageWorked=gsub("\\([^)]*)", "",LanguageWorked))%>%
+  filter(LanguageWorked !="")
+
+Desired_Language=stackover_full %>%
+  filter(!is.na(LanguageDesireNextYear)) %>%
+  mutate(LanguageDesire = str_split(LanguageDesireNextYear,pattern=';')) %>%
+  select(ResponseId,LanguageDesire)%>%
+  unnest(LanguageDesire) %>%
+  mutate(LanguageDesire=gsub("\\([^)]*)", "",LanguageDesire))%>%
+  filter(LanguageDesire !="")
+```
+
+
+Grouping by Language and showing them as Percantage: 
+
+```{r}
+Main_Laguage = Main_Laguage %>%mutate(Language = toupper(str_trim(LanguageWorked)))  %>%
+  group_by(Language) %>%
+  summarize(Perc_worked=round(n()/nrow(stackover_full)*100,2)) %>%
+  arrange(desc(Perc_worked))
+
+Desired_Language = Desired_Language%>%mutate(Language = toupper(str_trim(LanguageDesire))) %>%
+  group_by(Language) %>%
+  summarize(Perc_desire=round(n()/nrow(stackover_full)*100,2)) %>%
+  arrange(desc(Perc_desire))
+
+```
+  
+Merging Top20 desaired and main laguage columns; 
+  
+```{r}
+final_language=merge(x=Main_Laguage,y=Desired_Language,by="Language", all=TRUE )%>%arrange(desc(Perc_worked))%>% head(21)
+final_language
+```
+  
+
+## Salary Analysis
+
+In this part of study, we examined the salaries and programming language relations.
+
+Because of the size of our Data, I started to select the columns that we need. After selecting them it is always good to quick look at data with head and summary function.
+
+```{r message=FALSE, warning=FALSE}
+SalaryofStack<-stackover_full[,c('Year','Salary','LanguageWorkedWith','Country','MainBranch','CompTotal','CompFreq','SalaryType','ConvertedComp', 'Currency')]
+
+head(SalaryofStack)
+summary(SalaryofStack)
+
+```
+
+After selecting columns, I started to clean and merge columns because although I had corrected the data while merging there were still different and problematic columns in our data frame. 
+
+Also, I added to the tables the average currency of 2017 because there was no column for converted salary currency for 2017. Later I will come back to this.
+
+```{r message=FALSE, warning=FALSE}
+SalaryofStack2 <- SalaryofStack %>% 
+      mutate(Freqnew = coalesce(CompFreq,SalaryType)) %>% mutate(Freqnew = ifelse(CompFreq == '' ,SalaryType,Freqnew))
+
+SalaryofStack2$ConvertedComp <- as.numeric(SalaryofStack2$ConvertedComp)
+
+#write_clip(SalaryofStack2 %>% distinct(ConvertedComp, Year))
+
+
+Currency2017=read.csv(file = 'https://raw.githubusercontent.com/pjournal/mef05g-rninjas/gh-pages/average_currency_2017.csv',stringsAsFactors = FALSE, header = TRUE,sep = ";", encoding="UTF-8")
+SalaryofStack3<-left_join(SalaryofStack2, Currency2017, by =c("Currency"="CurrencyType"))
+
+describe(SalaryofStack3)
+
+```
+
+
+Unfortunately, the calculations with currency do not show reliable results for 2017 when we compare the distribution of other years. Firstly I started with multiplying the salary with the currency mean of 2017.
+
+```{r message=FALSE, warning=FALSE}
+SalaryofStack4 <- SalaryofStack3 %>% mutate(Finalsalary = ifelse((Year==2017), (Salary)*(Currency2017), ConvertedComp))
+
+SalaryofStack4 <- select(SalaryofStack4, c(-CompFreq, -SalaryType, -Currency2017, -CompTotal, -Currency, -Salary , -Freqnew ))
+
+SalaryofStack4 <- select(SalaryofStack4, c(-ConvertedComp))
+
+str(SalaryofStack4)
+
+SalaryofStack4<-SalaryofStack4 %>% filter(!is.na(Finalsalary))
+
+SalaryofStack5<-SalaryofStack4 %>% filter(between(Finalsalary, quantile(Finalsalary, 0.05), quantile(Finalsalary, 0.95)))
+
+hist(SalaryofStack5$Finalsalary)
+
+SalaryofStack5$Finalsalary<-as.numeric(SalaryofStack5$Finalsalary)
+
+SalaryofStack5plot2017<-SalaryofStack5 %>% filter(Year==2017)
+SalaryofStack5plot2018<-SalaryofStack5 %>% filter(Year==2018)
+SalaryofStack5plot2019<-SalaryofStack5 %>% filter(Year==2019)
+plot(density(SalaryofStack5plot2017$Finalsalary),col='Blue')
+lines(density(SalaryofStack5plot2018$Finalsalary),col='Red')
+lines(density(SalaryofStack5plot2019$Finalsalary),col='Black')
+lines(density(SalaryofStack5$Finalsalary),col='Orange')
+title(sub="Year Distribution - Blue is 2017") 
+
+```
+
+Unfortunately, again the method does not seem correct when we looked at the distribution. Therefore just looked at the salary data. 
+
+
+```{r message=FALSE, warning=FALSE}
+SalaryofStack4 <- SalaryofStack3 %>% mutate(Finalsalary = ifelse((Year==2017), (Salary), ConvertedComp))
+
+SalaryofStack4 <- select(SalaryofStack4, c(-CompFreq, -SalaryType, -Currency2017, -CompTotal, -Currency, -Salary , -Freqnew ))
+
+SalaryofStack4 <- select(SalaryofStack4, c(-ConvertedComp))
+
+str(SalaryofStack4)
+
+SalaryofStack4<-SalaryofStack4 %>% filter(!is.na(Finalsalary))
+
+SalaryofStack5<-SalaryofStack4 %>% filter(between(Finalsalary, quantile(Finalsalary, 0.04), quantile(Finalsalary, 0.96)))
+
+hist(SalaryofStack5$Finalsalary)
+
+SalaryofStack5$Finalsalary<-as.numeric(SalaryofStack5$Finalsalary)
+
+SalaryofStack5plot2017<-SalaryofStack5 %>% filter(Year==2017)
+SalaryofStack5plot2018<-SalaryofStack5 %>% filter(Year==2018)
+SalaryofStack5plot2019<-SalaryofStack5 %>% filter(Year==2019)
+plot(density(SalaryofStack5plot2017$Finalsalary),col='Blue')
+lines(density(SalaryofStack5plot2018$Finalsalary),col='Red')
+lines(density(SalaryofStack5plot2019$Finalsalary),col='Black')
+title(sub="Year Distribution - Blue is 2017") 
+
+```
+
+If I do not multiply and just use the Salary column then the results are still cannot be dependable. As you can see from above and below two of the table blue one is show the salary distribution for 2017 and they are not compatible with other years and total.
+
+Then, we changed the range of salary because we noticed that there is some missing and misleading answers in our data frame.
+
+Due to lack of data information when we observed the distribution for 2017 cannot be reliable.
+
+Hence we eliminated 2017's salary data. 
+
+```{r message=FALSE, warning=FALSE}
+
+SalaryofStack5<-SalaryofStack5%>%filter(Year!=2017)
+
+SalaryofStack5Turkey<-SalaryofStack5%>%filter(Country=="Turkey")
+
+SalaryofStack5notTurkey<-SalaryofStack5%>%filter(Country!="Turkey")
+
+SalaryofStack5USA<-SalaryofStack5%>%filter(Country=="United States")
+
+SalaryofStack5Sweeden<-SalaryofStack5%>%filter(Country=="Sweden")
+
+```
+
+And group them for some countries.
+
+Here we are looked at our data quickly to understand the frame. 
+
+```{r message=FALSE, warning=FALSE}
+plot(density(SalaryofStack5Turkey$Finalsalary),col='red')
+lines(density(SalaryofStack5notTurkey$Finalsalary),col='blue')
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+
+SalaryofStack5Turkey$Cntry <- 'TR'
+SalaryofStack5notTurkey$Cntry <- 'Other'
+SalaryofStack5USA$Cntry<-'USA'
+SalaryofStack5Sweeden$Cntry<-'Sweden'
+
+
+compareturkey <- rbind(SalaryofStack5Turkey, SalaryofStack5notTurkey)
+options(scipen = 5)
+ggplot(compareturkey, aes(Finalsalary, fill = Cntry)) + geom_density(alpha = 0.6)+
+    scale_x_continuous(limits = c(10000, 200000)) + 
+  labs(
+    caption = "density summary"  )
+
+
+```
+
+Here is our result distribution that shows Turkey and other countries' differences. When it comes to Salary Turkey is observed as below the world average. While Turkey's salaries are intense in 12-33k intervals world is between 27 and 91 k.
+
+Here are some other countries comparison from world and summary tables:
+
+```{r message=FALSE, warning=FALSE}
+
+compareturkey <- rbind(SalaryofStack5Turkey, SalaryofStack5notTurkey, SalaryofStack5USA, SalaryofStack5Sweeden)
+
+options(scipen = 5)
+ggplot(compareturkey, aes(Finalsalary, fill = Cntry)) + geom_density(alpha = 0.5)  + 
+  scale_x_continuous(limits = c(10000, 250000)) + 
+  labs(
+    caption = "density summary"  )
+
+
+sumother<-summary(SalaryofStack5notTurkey$Finalsalary)
+sumtr<-summary(SalaryofStack5Turkey$Finalsalary)
+sumusa<-summary(SalaryofStack5USA$Finalsalary)
+sumsweeden<-summary(SalaryofStack5Sweeden$Finalsalary)
+
+print("Other")
+sumother
+
+print("TR")
+sumtr
+
+print("USA")
+sumusa
+
+print("Sweeden")
+sumsweeden
+
+```
+
+Here we compared different programs and salaries and started to look and change our data. 
+
+Because of the fact that one programmer knows more than one language, I separated these persons depending on the language. It is assumed that languages that are known are the main cause of salaries.
+
+It is always good to look at the histogram of data to see the distribution.
+
+```{r message=FALSE, warning=FALSE}
+library(splitstackshape)
+
+SalaryofStack5<-SalaryofStack5 %>% filter(!is.na(LanguageWorkedWith))
+
+SalaryofStack5language <- trim(cSplit(SalaryofStack5, "LanguageWorkedWith", sep = ";", direction = "long"))
+
+SalaryofStack5language<- SalaryofStack5language%>% mutate(LanguageWorkedWith=ifelse(LanguageWorkedWith=='Bash/Shell', 'Bash.Shell.PowerShell',LanguageWorkedWith))%>% mutate(LanguageWorkedWith=ifelse(LanguageWorkedWith=='Bash/Shell/PowerShell', 'Bash.Shell.PowerShell',LanguageWorkedWith))
+
+SalaryofStack5languageTurkey<- SalaryofStack5language%>% filter(Country=="Turkey")
+
+```
+Because of the fast increase in USD-TL currency rate in 2018, there is a sharp decrease in salaries in Turkey for 2019. In 2021 the salaries are caching the previous year's salary. But unfortunately, one of the most decreases in the value of TL has recently occurred in late 2021. Thus, again another decrease may be observed in the data of next year.
+
+In line with the MEF Master’s program, I focused on Bash, R, and Python Languages and according to our studies Bash.Shell.Powershell is the winner of the comparison. Lack of R users shows fluctuation in salaries therefore it is hard to predict the salary power of R in Turkey. Python seems to more preferable in Turkey.
+
+```{r message=FALSE, warning=FALSE}
+
+aggregatedlanguageturkey<-aggregate(SalaryofStack5languageTurkey[, Finalsalary], list(SalaryofStack5languageTurkey$LanguageWorkedWith), mean)
+
+aggregatedlanguagecountturkey<-SalaryofStack5languageTurkey %>% count(LanguageWorkedWith, sort=TRUE)
+
+joinedlanguagecountandsalaryturkey<-left_join(aggregatedlanguagecountturkey,aggregatedlanguageturkey, by=c("LanguageWorkedWith"="Group.1"))
+
+aggregatedlanguageyearturkey<-aggregate(SalaryofStack5languageTurkey[, c('Finalsalary')], list(SalaryofStack5languageTurkey$LanguageWorkedWith,SalaryofStack5languageTurkey$Year), mean)
+
+aggregatedlanguageyearfilterturkey<- filter(aggregatedlanguageyearturkey, Group.1 %in% c('SQL','C#', 'R', 'C+', 'Java', 'Python', 'Bash.Shell.PowerShell'))
+
+plotsmoothbylanguagepopulartr = ggplot(data=aggregatedlanguageyearfilterturkey, aes(x = Group.2))+
+  geom_smooth(aes(y = Finalsalary, color=as.character(Group.1)))+
+  scale_y_continuous(limits = c(10000, 90000))
+plotsmoothbylanguagepopulartr
+
+
+```
+
+Now here, I also analyzed the data for the world because of the fact that there are more data that increase the dependability. 
+
+```{r message=FALSE, warning=FALSE}
+
+SalaryofStack5<-SalaryofStack5 %>% filter(!is.na(LanguageWorkedWith))
+
+aggregatedcountry<-aggregate(SalaryofStack5language[, Finalsalary], list(SalaryofStack5language$Country), mean)
+
+aggregatedlanguage<-aggregate(SalaryofStack5language[, Finalsalary], list(SalaryofStack5language$LanguageWorkedWith), mean)
+aggregatedlanguagecount<-SalaryofStack5language %>% count(LanguageWorkedWith, sort=TRUE)
+
+CNTR<-(count(SalaryofStack5language, Country)%>%filter(n>300))
+SalaryofStack5languagecntr<- SalaryofStack5language %>% filter(Country==CNTR$Country)
+
+aggregatedcountrYfianal<-aggregate(SalaryofStack5languagecntr[, Finalsalary], list(SalaryofStack5languagecntr$Country), mean)
+
+aggregatedlanguageyear<-aggregate(SalaryofStack5language[, c('Finalsalary')], list(SalaryofStack5language$LanguageWorkedWith,SalaryofStack5language$Year), mean)
+
+joinedlanguagecountandsalary<-left_join(aggregatedlanguagecount,aggregatedlanguage, by=c("LanguageWorkedWith"="Group.1"))
+
+
+#These are the most popular languages and we choose them to show in our smooth graph.
+
+aggregatedlanguageyearfilter<- filter(aggregatedlanguageyear, Group.1 %in% c('SQL','C#', 'R', 'C+', 'Java', 'Rust', 'Python', 'Ruby', 'Go'))
+
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+plotsmoothbylanguage = ggplot(data=aggregatedlanguageyearfilter, aes(x = Group.2))+
+  geom_smooth(aes(y = Finalsalary, color=as.character(Group.1)))+
+  scale_y_continuous(limits = c(20000, 100000))
+                                  
+plotsmoothbylanguage
+
+
+```
+
+And lastly here are the codes that show the R Python, and Bash trend in recent years and a comparison for Turkey and World average.
+
+```{r message=FALSE, warning=FALSE}
+
+RvsPythonvsBash<-filter(aggregatedlanguageyear, Group.1 %in% c("R", "Python", "Bash.Shell.PowerShell"))
+
+RvsPythonvsBashpl = ggplot(data=RvsPythonvsBash, aes(x = Group.2))+
+  geom_smooth(aes(y = Finalsalary, color=as.character(Group.1)))+
+  scale_y_continuous(limits = c(10000, 90000))
+                               
+RvsPythonvsBashpl
+
+RvsPythonvsBashtr<- filter(aggregatedlanguageyearfilterturkey, Group.1 %in% c("R", "Python", "Bash.Shell.PowerShell"))
+
+RvsPythonvsBashtrpl = ggplot(data=RvsPythonvsBashtr, aes(x = Group.2))+
+  geom_smooth(aes(y = Finalsalary, color=as.character(Group.1)))+
+  scale_y_continuous(limits = c(10000, 90000))
+                               
+RvsPythonvsBashtrpl
+
+
+
+
+```
+
+This is the summary table of language popularity and salary mean in the world.
+
+```{r message=FALSE, warning=FALSE}
+
+colnames(joinedlanguagecountandsalary)[2]<-"Popularity"
+colnames(joinedlanguagecountandsalary)[3]<-"Salarymean"
+
+joinedlanguagecountandsalary
+```
+
+
+This is the summary table of language popularity and salary mean in Turkey.
+
+```{r message=FALSE, warning=FALSE}
+
+colnames(joinedlanguagecountandsalaryturkey)[2]<-"Popularity"
+colnames(joinedlanguagecountandsalaryturkey)[3]<-"Salarymean"
+joinedlanguagecountandsalaryturkey
+```
+
+
+And this is the model that shows the regression popularity and salary. This is the data that shows the regression between language popularity and salary. We expect that if the language is well known than the salary is lower. 
+
+```{r message=FALSE, warning=FALSE}
+model<-lm(Popularity~ Salarymean, data=joinedlanguagecountandsalary)
+model
+
+plot(joinedlanguagecountandsalary$Salarymean, joinedlanguagecountandsalary$Popularity,col = "green", main="The Relation Between Salary and Popularity-World")
+abline (model, col="blue")
+selectedw<-c(1,4,5,19)
+text(joinedlanguagecountandsalary$Salarymean[selectedw], joinedlanguagecountandsalary$Popularity[selectedw], labels = joinedlanguagecountandsalary$LanguageWorkedWith[selectedw], cex = 0.6, pos = 4, col = "blue")
+
+modelturkey<-lm(Popularity~ Salarymean, data=joinedlanguagecountandsalaryturkey)
+modelturkey
+
+plot(joinedlanguagecountandsalaryturkey$Salarymean, joinedlanguagecountandsalaryturkey$Popularity,col = "blue", main="The Relation Between Salary and Popularity-Turkey")
+abline (modelturkey, col="red")
+selected<-c(1,2,6,9,22)
+text(joinedlanguagecountandsalaryturkey$Salarymean[selected], joinedlanguagecountandsalaryturkey$Popularity[selected], labels = joinedlanguagecountandsalaryturkey$LanguageWorkedWith[selected], cex = 0.6, pos = 4, col = "red")
+
+
+```
+
+
+Unlike our expectation, the relation between language popularity and salary is not strong. It shows that if one chooses to learn a programming language s/he also needs to evaluate the demand of language in the sector. It is acceptable that there is a relation but it is not strong.
