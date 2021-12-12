@@ -24,15 +24,15 @@ In this application, the price changes and data of the selected fish according t
 
    1. [Preparation of the preprocessed data](stackover_data_preparation.html)
     
-   2. [General information about data](stackover_data_general.html)
-    
-   3. [Exploratory Data Analysis](stackover_data_full_eda.html)
-    
-         a. [Database Analyis](stackover_data_database.html)
+   2. [Exploratory Data Analysis](stackover_final.html)
+     
+         a. General Information About Data
          
-         b. [Language Analysis](stackover_data_language.html)
+         b. Database Analyis
          
-         c. [Salary Analyis](https://pjournal.github.io/mef05-emrecansi/)
+         c. Language Analysis
+         
+         d. Salary Analyis
          
           
          
