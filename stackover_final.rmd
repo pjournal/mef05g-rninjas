@@ -321,14 +321,17 @@ These values were re-categorized according to the level of education.
 
 stackover_full=stackover_full %>% 
   mutate(EdLevel_Bucket=case_when(EdLevel %in% c("Secondary school","Primary/elementary school","Something else")~1,
-                                  EdLevel %in% c("Associate degre","Bachelor's degree")~2,
+                                  EdLevel %in% c("Associate degre","Bachelor's degree","Bachelor's degree	")~2,
                                   EdLevel %in% c("Doctoral degree","Master's degree","Other doctoral degree","Professional degree")~3,
-                                  EdLevel %in% c("I never completed any formal education","Some college/university study without earning a degree")~4,
+                                  EdLevel %in% c("I never completed any formal education")~4,
+                                  EdLevel %in% c("Some college/university study without earning a degree")~4,
+                                  EdLevel %in% c("Some college/university study without earning a bachelor's degree")~4,
                                   EdLevel %in% c("I prefer not to answer","")~5,
-                                  TRUE ~6))
-
-
+                                  TRUE ~6)) %>%
+  mutate(EdLevel_Bucket=ifelse(str_detect(EdLevel,"^Bachelor"),2,ifelse(str_detect(EdLevel,"^Associate"),2,EdLevel_Bucket)))
+  
 edleveldist=stackover_full%>%group_by(Year,EdLevel_Bucket)%>%count()
+
 ```
 
 When the graph is examined, Stack Overflow mostly is used by people that have *Associate degree* or *Bachelor's degree*.
